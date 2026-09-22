@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_eigr_construction_root"
+        name="EIGR Obras"
+        sequence="10"
+        groups="eigr_construction_management.group_eigr_user"
+        web_icon="eigr_construction_management,static/description/icon.png"
+    />
+    <menuitem
+        id="menu_eigr_construction_management"
+        name="Gestión"
+        parent="menu_eigr_construction_root"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_eigr_construction_dashboard"
+        name="Tablero Ejecutivo"
+        parent="menu_eigr_construction_root"
+        action="action_eigr_construction_dashboard"
+        sequence="5"
+    />
+    <menuitem
+        id="menu_eigr_construction_projects"
+        name="Obras"
+        parent="menu_eigr_construction_management"
+        action="action_eigr_construction_project"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_eigr_construction_budgets"
+        name="Presupuestos"
+        parent="menu_eigr_construction_management"
+        action="action_eigr_construction_budget"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_eigr_construction_valuations"
+        name="Valorizaciónes y Avance"
+        parent="menu_eigr_construction_management"
+        action="action_eigr_construction_valuation"
+        sequence="30"
+    />
+    <menuitem
+        id="menu_eigr_construction_requirements"
+        name="Requerimientos"
+        parent="menu_eigr_construction_management"
+        action="action_eigr_construction_requirement"
+        sequence="40"
+    />
+    <menuitem
+        id="menu_eigr_construction_closures"
+        name="Cierre de Obras"
+        parent="menu_eigr_construction_management"
+        action="action_eigr_construction_closure"
+        sequence="50"
+    />
+</odoo>

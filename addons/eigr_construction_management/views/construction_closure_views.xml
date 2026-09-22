@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_eigr_construction_closure_list" model="ir.ui.view">
+        <field name="name">eigr.construction.closure.list</field>
+        <field name="model">eigr.construction.closure</field>
+        <field name="arch" type="xml">
+            <list string="Expedientes de cierre" decoration-muted="state == 'cancelled'" decoration-success="state == 'approved'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="responsible_id" widget="many2one_avatar_user"/>
+                <field name="target_date"/>
+                <field name="completed_count"/>
+                <field name="item_count"/>
+                <field name="completion_percent" widget="progressbar"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'review'"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_eigr_construction_closure_form" model="ir.ui.view">
+        <field name="name">eigr.construction.closure.form</field>
+        <field name="model">eigr.construction.closure</field>
+        <field name="arch" type="xml">
+            <form string="Expediente de cierre">
+                <header>
+                    <button name="action_generate_checklist" string="Generar Checklist" type="object" invisible="state != 'draft'"/>
+                    <button name="action_submit_review" string="Enviar a revision" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Aprobar y cerrar obra" type="object" class="btn-primary" groups="eigr_construction_management.group_eigr_manager" invisible="state != 'review'" confirm="¿Confirma la aprobación final y el cierre de la obra?"/>
+                    <button name="action_reset_draft" string="Devolver a preparacion" type="object" groups="eigr_construction_management.group_eigr_manager" invisible="state != 'review'"/>
+                    <button name="action_cancel" string="Cancelar" type="object" groups="eigr_construction_management.group_eigr_manager" invisible="state not in ('draft', 'review')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,review,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Expediente de cierre de obra" readonly="state != 'draft'"/></h1>
+                        <h2><field name="code" readonly="state != 'draft'"/></h2>
+                    </div>
+                    <group>
+                        <group string="Control del cierre">
+                            <field name="project_id" readonly="state != 'draft'" options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="responsible_id" widget="many2one_avatar_user" readonly="state != 'draft'"/>
+                            <field name="start_date" readonly="state != 'draft'"/>
+                            <field name="target_date" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                            <field name="approved_by_id" widget="many2one_avatar_user" invisible="state != 'approved'"/>
+                            <field name="approval_date" invisible="state != 'approved'"/>
+                        </group>
+                        <group string="Resultado documental">
+                            <field name="completion_percent" widget="progressbar"/>
+                            <field name="completed_count"/>
+                            <field name="item_count"/>
+                            <field name="final_report_reference" readonly="state != 'draft'"/>
+                            <field name="client_acceptance_date" readonly="state != 'draft'"/>
+                            <field name="liquidation_reference" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Checklist de cierre">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom" default_order="sequence">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="category"/>
+                                    <field name="name"/>
+                                    <field name="responsible_id" widget="many2one_avatar_user"/>
+                                    <field name="deadline"/>
+                                    <field name="status"
+                                           decoration-info="status == 'in_progress'"
+                                           decoration-success="status == 'done'"
+                                           decoration-muted="status == 'waived'"
+                                           decoration-warning="status == 'pending'"/>
+                                    <field name="evidence_reference" optional="show"/>
+                                    <field name="completion_date" optional="hide"/>
+                                </list>
+                                <form string="Control de cierre">
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="category"/>
+                                                <field name="name"/>
+                                                <field name="responsible_id" widget="many2one_avatar_user"/>
+                                                <field name="deadline"/>
+                                            </group>
+                                            <group>
+                                                <field name="status"/>
+                                                <field name="evidence_reference"/>
+                                                <field name="attachment_ids" widget="many2many_binary"/>
+                                                <field name="completed_by_id" widget="many2one_avatar_user"/>
+                                                <field name="completion_date"/>
+                                                <field name="notes"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Lecciones aprendidas">
+                            <field name="lessons_learned" placeholder="Buenas practicas, problemas y recomendaciones..." readonly="state != 'draft'"/>
+                        </page>
+                        <page string="Conclusiones">
+                            <field name="final_notes" placeholder="Conclusiones del cierre contractual, administrativo y documentario..." readonly="state != 'draft'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_eigr_construction_closure_search" model="ir.ui.view">
+        <field name="name">eigr.construction.closure.search</field>
+        <field name="model">eigr.construction.closure</field>
+        <field name="arch" type="xml">
+            <search string="Buscar cierres">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="responsible_id"/>
+                <filter name="preparation" string="En preparacion" domain="[('state', '=', 'draft')]"/>
+                <filter name="review" string="Por aprobar" domain="[('state', '=', 'review')]"/>
+                <filter name="approved" string="Aprobados" domain="[('state', '=', 'approved')]"/>
+                <group name="group_by">
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_responsible" string="Responsable" context="{'group_by': 'responsible_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_eigr_construction_closure" model="ir.actions.act_window">
+        <field name="name">Cierre de Obras</field>
+        <field name="res_model">eigr.construction.closure</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_eigr_construction_closure_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Prepare el expediente de cierre</p>
+            <p>Controle documentos, obligaciones, liquidación y lecciones aprendidas.</p>
+        </field>
+    </record>
+</odoo>

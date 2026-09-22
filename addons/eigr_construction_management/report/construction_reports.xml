@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_eigr_project_executive">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">REPORTE EJECUTIVO DE OBRA</h2>
+                        <p class="text-center text-muted">EIGR Contratistas - Proyecto academico</p>
+
+                        <table class="table table-sm table-bordered mt-4">
+                            <tbody>
+                                <tr>
+                                    <th style="width:20%">Código</th>
+                                    <td style="width:30%"><span t-field="o.code"/></td>
+                                    <th style="width:20%">Estado</th>
+                                    <td style="width:30%"><span t-field="o.state"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Obra</th>
+                                    <td colspan="3"><strong><span t-field="o.name"/></strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <td><span t-field="o.client_id"/></td>
+                                    <th>Ubicación</th>
+                                    <td><span t-field="o.location"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Responsable</th>
+                                    <td><span t-field="o.responsible_id"/></td>
+                                    <th>Contrato</th>
+                                    <td><span t-field="o.contract_number"/></td>
+                                </tr>
+                                <tr>
+                                    <th>Inicio planificado</th>
+                                    <td><span t-field="o.planned_start_date"/></td>
+                                    <th>Fin planificado</th>
+                                    <td><span t-field="o.planned_end_date"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Indicadores ejecutivos</h4>
+                        <table class="table table-sm table-bordered text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Avance físico</th>
+                                    <th>Cierre documental</th>
+                                    <th>Costo Meta</th>
+                                    <th>Venta Meta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span t-esc="'{:.2f}%'.format(o.progress_percent)"/></td>
+                                    <td><span t-esc="'{:.2f}%'.format(o.closure_progress)"/></td>
+                                    <td><span t-field="o.approved_budget_cost" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                                    <td><span t-field="o.approved_budget_sale" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Ultima valorización aprobada</h4>
+                        <t t-if="o.latest_valuation_id">
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>Fecha de corte</th>
+                                        <td><span t-field="o.latest_valuation_id.cutoff_date"/></td>
+                                        <th>Avance planificado</th>
+                                        <td><span t-esc="'{:.2f}%'.format(o.latest_valuation_id.planned_progress)"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Avance real</th>
+                                        <td><span t-esc="'{:.2f}%'.format(o.latest_valuation_id.actual_progress)"/></td>
+                                        <th>CPI</th>
+                                        <td><span t-esc="'{:.2f}%'.format(o.latest_valuation_id.cpi_percent)"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                        <p t-else="" class="text-muted">No existen valorizaciónes aprobadas.</p>
+
+                        <h4 class="mt-4">Resumen de gestión</h4>
+                        <table class="table table-sm table-bordered text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Presupuestos</th>
+                                    <th>Valorizaciónes</th>
+                                    <th>Requerimientos</th>
+                                    <th>Expediente de cierre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span t-field="o.budget_count"/></td>
+                                    <td><span t-field="o.valuation_count"/></td>
+                                    <td><span t-field="o.requirement_count"/></td>
+                                    <td><span t-esc="o.closure_id.code if o.closure_id else 'No creado'"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <t t-if="o.closure_id">
+                            <h4 class="mt-4">Checklist de cierre</h4>
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Categoria</th>
+                                        <th>Requisito</th>
+                                        <th>Estado</th>
+                                        <th>Evidencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.closure_id.line_ids" t-as="line">
+                                        <td><span t-field="line.category"/></td>
+                                        <td><span t-field="line.name"/></td>
+                                        <td><span t-field="line.status"/></td>
+                                        <td><span t-field="line.evidence_reference"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <div class="mt-5 pt-4 border-top text-muted small">
+                            Documento generado desde Odoo para fines academicos.
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_eigr_project_executive" model="ir.actions.report">
+        <field name="name">Reporte Ejecutivo EIGR</field>
+        <field name="model">eigr.construction.project</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">eigr_construction_management.report_eigr_project_executive</field>
+        <field name="report_file">eigr_construction_management.report_eigr_project_executive</field>
+        <field name="binding_model_id" ref="model_eigr_construction_project"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Reporte Ejecutivo - %s' % object.code</field>
+    </record>
+</odoo>

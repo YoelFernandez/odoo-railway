@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_eigr_construction_project_list" model="ir.ui.view">
+        <field name="name">eigr.construction.project.list</field>
+        <field name="model">eigr.construction.project</field>
+        <field name="arch" type="xml">
+            <list string="Obras" default_order="code desc" decoration-muted="state == 'cancelled'" decoration-success="state == 'closed'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="client_id"/>
+                <field name="responsible_id" widget="many2one_avatar_user"/>
+                <field name="planned_start_date" optional="show"/>
+                <field name="planned_end_date" optional="show"/>
+                <field name="progress_percent" widget="progressbar" optional="show"/>
+                <field name="contract_amount" widget="monetary" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('startup', 'planning')"
+                       decoration-warning="state in ('execution', 'closing')"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_eigr_construction_project_kanban" model="ir.ui.view">
+        <field name="name">eigr.construction.project.kanban</field>
+        <field name="model">eigr.construction.project</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" sample="1">
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong class="fs-5"><field name="name"/></strong>
+                            <field name="state" widget="label_selection"
+                                   options="{'classes': {'draft': 'default', 'startup': 'info', 'planning': 'info', 'execution': 'warning', 'closing': 'warning', 'closed': 'success', 'cancelled': 'danger'}}"/>
+                        </div>
+                        <div class="text-muted"><field name="code"/></div>
+                        <div invisible="not client_id"><i class="fa fa-building-o me-1" title="Cliente"/><field name="client_id"/></div>
+                        <div invisible="not location"><i class="fa fa-map-marker me-1" title="Ubicación"/><field name="location"/></div>
+                        <field name="progress_percent" widget="progressbar" class="mt-2"/>
+                        <footer class="mt-2">
+                            <field name="responsible_id" widget="many2one_avatar_user"/>
+                            <field name="contract_amount" widget="monetary" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_eigr_construction_project_form" model="ir.ui.view">
+        <field name="name">eigr.construction.project.form</field>
+        <field name="model">eigr.construction.project</field>
+        <field name="arch" type="xml">
+            <form string="Obra">
+                <header>
+                    <button name="action_startup" string="Iniciar arranque" type="object" class="btn-primary" groups="eigr_construction_management.group_eigr_responsible" invisible="state != 'draft'"/>
+                    <button name="action_planning" string="Iniciar planificación" type="object" class="btn-primary" groups="eigr_construction_management.group_eigr_responsible" invisible="state != 'startup'"/>
+                    <button name="action_execution" string="Iniciar ejecución" type="object" class="btn-primary" groups="eigr_construction_management.group_eigr_responsible" invisible="state != 'planning'"/>
+                    <button name="action_closing" string="Solicitar cierre" type="object" class="btn-primary" groups="eigr_construction_management.group_eigr_responsible" invisible="state != 'execution'"/>
+                    <button name="action_cancel" string="Cancelar" type="object" groups="eigr_construction_management.group_eigr_manager" invisible="state in ('closed', 'cancelled')" confirm="¿Confirma la cancelación de esta obra?"/>
+                    <button name="action_reset_draft" string="Volver a borrador" type="object" groups="eigr_construction_management.group_eigr_manager" invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,startup,planning,execution,closing,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_budgets" type="object" class="oe_stat_button" icon="fa-calculator">
+                            <field name="budget_count" widget="statinfo" string="Presupuestos"/>
+                        </button>
+                        <button name="action_view_valuations" type="object" class="oe_stat_button" icon="fa-line-chart">
+                            <field name="valuation_count" widget="statinfo" string="Valorizaciónes"/>
+                        </button>
+                        <button name="action_view_requirements" type="object" class="oe_stat_button" icon="fa-truck">
+                            <field name="requirement_count" widget="statinfo" string="Requerimientos"/>
+                        </button>
+                        <button name="action_view_closure" type="object" class="oe_stat_button" icon="fa-check-square-o">
+                            <field name="closure_progress" widget="statinfo" string="Cierre (%)"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Nombre de la obra"/></h1>
+                        <h2><field name="code" readonly="state != 'draft'"/></h2>
+                    </div>
+                    <group>
+                        <group string="Información contractual">
+                            <field name="client_id"/>
+                            <field name="contract_number"/>
+                            <field name="contract_amount" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="location"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Programación y avance">
+                            <field name="planned_start_date"/>
+                            <field name="planned_end_date"/>
+                            <field name="actual_start_date" readonly="1"/>
+                            <field name="actual_end_date" readonly="1"/>
+                            <field name="progress_percent" widget="progressbar"/>
+                            <field name="approved_budget_id" readonly="1" invisible="not approved_budget_id"/>
+                            <field name="approved_budget_cost" widget="monetary" readonly="1" invisible="not approved_budget_id"/>
+                            <field name="approved_budget_sale" widget="monetary" readonly="1" invisible="not approved_budget_id"/>
+                            <field name="latest_valuation_id" readonly="1" invisible="not latest_valuation_id"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Equipo responsable">
+                            <group>
+                                <group>
+                                    <field name="responsible_id" widget="many2one_avatar_user"/>
+                                    <field name="control_manager_id" widget="many2one_avatar_user"/>
+                                </group>
+                                <group>
+                                    <field name="planning_engineer_id" widget="many2one_avatar_user"/>
+                                    <field name="resident_id" widget="many2one_avatar_user"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Descripción">
+                            <field name="notes" placeholder="Alcance y observaciones de la obra..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_eigr_construction_project_search" model="ir.ui.view">
+        <field name="name">eigr.construction.project.search</field>
+        <field name="model">eigr.construction.project</field>
+        <field name="arch" type="xml">
+            <search string="Buscar obras">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="client_id"/>
+                <field name="responsible_id"/>
+                <field name="location"/>
+                <filter name="my_projects" string="Mis obras" domain="['|', '|', '|', ('responsible_id', '=', uid), ('control_manager_id', '=', uid), ('planning_engineer_id', '=', uid), ('resident_id', '=', uid)]"/>
+                <separator/>
+                <filter name="active_execution" string="En ejecución" domain="[('state', '=', 'execution')]"/>
+                <filter name="pending_closing" string="Pendientes de cierre" domain="[('state', '=', 'closing')]"/>
+                <filter name="closed" string="Cerradas" domain="[('state', '=', 'closed')]"/>
+                <group name="group_by">
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_responsible" string="Responsable" context="{'group_by': 'responsible_id'}"/>
+                    <filter name="group_client" string="Cliente" context="{'group_by': 'client_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_eigr_construction_project" model="ir.actions.act_window">
+        <field name="name">Obras</field>
+        <field name="res_model">eigr.construction.project</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_eigr_construction_project_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Cree la primera obra de EIGR</p>
+            <p>Registre los datos contractuales y gestióne el ciclo de la obra.</p>
+        </field>
+    </record>
+</odoo>

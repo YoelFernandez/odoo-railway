@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="privilege_eigr_construction" model="res.groups.privilege">
+        <field name="name">Gestión de Obras EIGR</field>
+        <field name="sequence">30</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+
+    <record id="group_eigr_user" model="res.groups">
+        <field name="name">Equipo de obra</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="privilege_eigr_construction"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_eigr_responsible" model="res.groups">
+        <field name="name">Responsable General</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="privilege_eigr_construction"/>
+        <field name="implied_ids" eval="[(4, ref('group_eigr_user'))]"/>
+    </record>
+
+    <record id="group_eigr_planner" model="res.groups">
+        <field name="name">Ingeniería de Planeamiento</field>
+        <field name="sequence">30</field>
+        <field name="privilege_id" ref="privilege_eigr_construction"/>
+        <field name="implied_ids" eval="[(4, ref('group_eigr_user'))]"/>
+    </record>
+
+    <record id="group_eigr_resident" model="res.groups">
+        <field name="name">Residente de Obra</field>
+        <field name="sequence">40</field>
+        <field name="privilege_id" ref="privilege_eigr_construction"/>
+        <field name="implied_ids" eval="[(4, ref('group_eigr_user'))]"/>
+    </record>
+
+    <record id="group_eigr_manager" model="res.groups">
+        <field name="name">Jefe de Control</field>
+        <field name="sequence">50</field>
+        <field name="privilege_id" ref="privilege_eigr_construction"/>
+        <field name="implied_ids" eval="[(4, ref('group_eigr_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <data noupdate="1">
+        <record id="rule_eigr_project_company" model="ir.rule">
+            <field name="name">Obras EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_project"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_project_assigned" model="ir.rule">
+            <field name="name">Equipo: obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_project"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('responsible_id', '=', user.id), ('control_manager_id', '=', user.id), ('planning_engineer_id', '=', user.id), ('resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_project_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todas las obras</field>
+            <field name="model_id" ref="model_eigr_construction_project"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_budget_company" model="ir.rule">
+            <field name="name">Presupuestos EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_budget"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_budget_assigned" model="ir.rule">
+            <field name="name">Equipo: presupuestos de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_budget"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('project_id.responsible_id', '=', user.id), ('project_id.control_manager_id', '=', user.id), ('project_id.planning_engineer_id', '=', user.id), ('project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_budget_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todos los presupuestos</field>
+            <field name="model_id" ref="model_eigr_construction_budget"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_budget_line_company" model="ir.rule">
+            <field name="name">Partidas EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_budget_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_budget_line_assigned" model="ir.rule">
+            <field name="name">Equipo: partidas de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_budget_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('budget_id.project_id.responsible_id', '=', user.id), ('budget_id.project_id.control_manager_id', '=', user.id), ('budget_id.project_id.planning_engineer_id', '=', user.id), ('budget_id.project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_budget_line_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todas las partidas</field>
+            <field name="model_id" ref="model_eigr_construction_budget_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_valuation_company" model="ir.rule">
+            <field name="name">Valorizaciónes EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_valuation"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_valuation_assigned" model="ir.rule">
+            <field name="name">Equipo: valorizaciónes de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_valuation"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('project_id.responsible_id', '=', user.id), ('project_id.control_manager_id', '=', user.id), ('project_id.planning_engineer_id', '=', user.id), ('project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_valuation_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todas las valorizaciónes</field>
+            <field name="model_id" ref="model_eigr_construction_valuation"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_valuation_line_company" model="ir.rule">
+            <field name="name">Avances EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_valuation_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_valuation_line_assigned" model="ir.rule">
+            <field name="name">Equipo: avances de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_valuation_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('valuation_id.project_id.responsible_id', '=', user.id), ('valuation_id.project_id.control_manager_id', '=', user.id), ('valuation_id.project_id.planning_engineer_id', '=', user.id), ('valuation_id.project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_valuation_line_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todos los avances</field>
+            <field name="model_id" ref="model_eigr_construction_valuation_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_requirement_company" model="ir.rule">
+            <field name="name">Requerimientos EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_requirement"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_requirement_assigned" model="ir.rule">
+            <field name="name">Equipo: requerimientos de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_requirement"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('project_id.responsible_id', '=', user.id), ('project_id.control_manager_id', '=', user.id), ('project_id.planning_engineer_id', '=', user.id), ('project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_requirement_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todos los requerimientos</field>
+            <field name="model_id" ref="model_eigr_construction_requirement"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_requirement_line_company" model="ir.rule">
+            <field name="name">Recursos solicitados EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_requirement_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_requirement_line_assigned" model="ir.rule">
+            <field name="name">Equipo: recursos de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_requirement_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('requirement_id.project_id.responsible_id', '=', user.id), ('requirement_id.project_id.control_manager_id', '=', user.id), ('requirement_id.project_id.planning_engineer_id', '=', user.id), ('requirement_id.project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_requirement_line_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todos los recursos solicitados</field>
+            <field name="model_id" ref="model_eigr_construction_requirement_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_closure_company" model="ir.rule">
+            <field name="name">Cierres EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_closure"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_closure_assigned" model="ir.rule">
+            <field name="name">Equipo: cierres de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_closure"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('project_id.responsible_id', '=', user.id), ('project_id.control_manager_id', '=', user.id), ('project_id.planning_engineer_id', '=', user.id), ('project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_closure_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todos los cierres</field>
+            <field name="model_id" ref="model_eigr_construction_closure"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_eigr_closure_line_company" model="ir.rule">
+            <field name="name">Checklist de cierre EIGR: multiempresa</field>
+            <field name="model_id" ref="model_eigr_construction_closure_line"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="rule_eigr_closure_line_assigned" model="ir.rule">
+            <field name="name">Equipo: checklist de obras asignadas</field>
+            <field name="model_id" ref="model_eigr_construction_closure_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_user'))]"/>
+            <field name="domain_force">['|', '|', '|', ('closure_id.project_id.responsible_id', '=', user.id), ('closure_id.project_id.control_manager_id', '=', user.id), ('closure_id.project_id.planning_engineer_id', '=', user.id), ('closure_id.project_id.resident_id', '=', user.id)]</field>
+        </record>
+
+        <record id="rule_eigr_closure_line_manager" model="ir.rule">
+            <field name="name">Jefe de Control: todos los checklist de cierre</field>
+            <field name="model_id" ref="model_eigr_construction_closure_line"/>
+            <field name="groups" eval="[Command.link(ref('group_eigr_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+    </data>
+</odoo>
