@@ -2,7 +2,7 @@
 
 cat > /tmp/odoo.conf <<EOF
 [options]
-addons_path = /usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons
+addons_path = /usr/lib/python3/dist-packages/odoo/addons,/mnt/custom-addons
 
 db_host = ${ODOO_DATABASE_HOST}
 db_port = ${ODOO_DATABASE_PORT}
