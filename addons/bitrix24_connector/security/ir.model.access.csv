@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_bitrix_config_user,bitrix.config.user,model_bitrix_config,base.group_user,1,1,1,1
+access_bitrix_sync_log_user,bitrix.sync.log.user,model_bitrix_sync_log,base.group_user,1,0,0,1

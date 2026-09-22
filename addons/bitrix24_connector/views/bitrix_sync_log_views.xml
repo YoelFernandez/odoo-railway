@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <record id="view_bitrix_sync_log_list" model="ir.ui.view">
+        <field name="name">bitrix.sync.log.list</field>
+        <field name="model">bitrix.sync.log</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="run_datetime"/>
+                <field name="direction"/>
+                <field name="incremental"/>
+                <field name="imported"/>
+                <field name="updated"/>
+                <field name="exported"/>
+                <field name="failed"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bitrix_sync_log_form" model="ir.ui.view">
+        <field name="name">bitrix.sync.log.form</field>
+        <field name="model">bitrix.sync.log</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="run_datetime"/>
+                        <field name="direction"/>
+                        <field name="incremental"/>
+                    </group>
+                    <group>
+                        <field name="imported"/>
+                        <field name="updated"/>
+                        <field name="exported"/>
+                        <field name="failed"/>
+                    </group>
+                    <notebook>
+                        <page string="Errores" name="errors">
+                            <field name="error_log"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bitrix_sync_log" model="ir.actions.act_window">
+        <field name="name">Historial de sincronización</field>
+        <field name="res_model">bitrix.sync.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_bitrix_sync_log"
+        name="Historial"
+        parent="menu_bitrix_root"
+        action="action_bitrix_sync_log"
+        sequence="20"
+    />
+
+</odoo>

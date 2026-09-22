@@ -85,20 +85,30 @@
                         <h2><field name="code" readonly="state != 'draft'"/></h2>
                     </div>
                     <group>
-                        <group string="Información contractual">
+                        <group string="Contratantes y partes">
                             <field name="client_id"/>
-                            <field name="contract_number"/>
-                            <field name="contract_amount" widget="monetary"/>
-                            <field name="currency_id" invisible="1"/>
+                            <field name="consortium_id"/>
+                            <field name="contractor_id"/>
+                            <field name="supervisor_id"/>
+                            <field name="work_type"/>
                             <field name="location"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
-                        <group string="Programación y avance">
+                        <group string="Contrato">
+                            <field name="contract_number"/>
+                            <field name="contract_amount" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="contract_date"/>
+                            <field name="contract_term"/>
+                            <field name="contract_end_date"/>
+                        </group>
+                        <group string="Avance" class="mt-3">
+                            <field name="progress_percent" widget="progressbar"/>
+                            <field name="financial_progress" widget="progressbar"/>
                             <field name="planned_start_date"/>
                             <field name="planned_end_date"/>
                             <field name="actual_start_date" readonly="1"/>
                             <field name="actual_end_date" readonly="1"/>
-                            <field name="progress_percent" widget="progressbar"/>
                             <field name="approved_budget_id" readonly="1" invisible="not approved_budget_id"/>
                             <field name="approved_budget_cost" widget="monetary" readonly="1" invisible="not approved_budget_id"/>
                             <field name="approved_budget_sale" widget="monetary" readonly="1" invisible="not approved_budget_id"/>
@@ -118,6 +128,135 @@
                                     <field name="resident_id" widget="many2one_avatar_user"/>
                                 </group>
                             </group>
+                        </page>
+                        <page string="Expediente técnico">
+                            <field name="technical_file_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="approval_date"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Partidas y metrados">
+                            <field name="metrado_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="description"/>
+                                    <field name="unit"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price" widget="monetary"/>
+                                    <field name="amount" widget="monetary"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Cronograma">
+                            <field name="schedule_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="weight_percent"/>
+                                    <field name="actual_percent"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Adelantos">
+                            <field name="advance_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="advance_type"/>
+                                    <field name="approved_amount" widget="monetary"/>
+                                    <field name="amortization_percent"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Adicionales / Deductivos">
+                            <field name="additional_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="kind"/>
+                                    <field name="approved_amount" widget="monetary"/>
+                                    <field name="resolution"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Ampliaciones de plazo">
+                            <field name="deadline_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="days"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Penalidades">
+                            <field name="penalty_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="penalty_type"/>
+                                    <field name="days_delayed"/>
+                                    <field name="daily_rate" widget="monetary"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Incidencias">
+                            <field name="incident_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="incident_type"/>
+                                    <field name="date"/>
+                                    <field name="reported_by_id"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Documentos">
+                            <field name="document_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="doc_type"/>
+                                    <field name="name"/>
+                                    <field name="reference"/>
+                                    <field name="date"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Personal, Equipos y Materiales">
+                            <field name="resource_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="resource_type"/>
+                                    <field name="role"/>
+                                    <field name="quantity"/>
+                                    <field name="hourly_rate" widget="monetary"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Costos">
+                            <field name="cost_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="cost_type"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price" widget="monetary"/>
+                                    <field name="amount" widget="monetary"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Liquidación">
+                            <field name="liquidation_ids" context="{'default_project_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="contractual_amount" widget="monetary"/>
+                                    <field name="executed_amount" widget="monetary"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Descripción">
                             <field name="notes" placeholder="Alcance y observaciones de la obra..."/>

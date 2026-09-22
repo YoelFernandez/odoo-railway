@@ -5,7 +5,7 @@
     "category": "Services/Project",
     "author": "Proyecto academico EIGR",
     "license": "LGPL-3",
-    "depends": ["base", "mail", "contacts", "web"],
+    "depends": ["base", "mail", "contacts", "web", "uom"],
     "data": [
         "security/eigr_security.xml",
         "security/ir.model.access.csv",
@@ -17,6 +17,7 @@
         "views/construction_closure_views.xml",
         "views/construction_project_views.xml",
         "views/construction_dashboard_views.xml",
+        "views/construction_worksheet_views.xml",
         "report/construction_reports.xml",
         "views/construction_menus.xml",
     ],

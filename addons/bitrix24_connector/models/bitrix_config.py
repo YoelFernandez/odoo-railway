@@ -156,3 +156,36 @@ class BitrixConfig(models.Model):
         return self.env[
             "res.partner"
         ].import_bitrix_contacts()
+
+    def action_sync_projects_now(self):
+
+        self.ensure_one()
+
+        try:
+
+            result = self.env[
+                "eigr.construction.project"
+            ].sync_projects_with_bitrix(self)
+
+        except Exception as error:
+
+            raise UserError(
+                _("Error sincronizando proyectos con "
+                  "Bitrix24: %s") % error
+            )
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Bitrix24"),
+                "message": _(
+                    "Proyectos sincronizados. "
+                    "Importados: %(imported)s | "
+                    "Actualizados: %(updated)s | "
+                    "Exportados: %(exported)s"
+                ) % result,
+                "type": "success",
+                "sticky": False,
+            },
+        }

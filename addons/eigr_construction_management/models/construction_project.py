@@ -24,15 +24,61 @@ class EigrConstructionProject(models.Model):
     )
     client_id = fields.Many2one(
         "res.partner",
-        string="Cliente",
+        string="Entidad contratante",
         tracking=True,
         domain="[('is_company', '=', True)]",
         check_company=True,
+    )
+    consortium_id = fields.Many2one(
+        "res.partner",
+        string="Consorcio",
+        tracking=True,
+        domain="[('is_company', '=', True)]",
+    )
+    contractor_id = fields.Many2one(
+        "res.partner",
+        string="Contratista",
+        tracking=True,
+        domain="[('is_company', '=', True)]",
+    )
+    supervisor_id = fields.Many2one(
+        "res.partner",
+        string="Supervisor",
+        tracking=True,
+        domain="[('is_company', '=', True)]",
+    )
+    work_type = fields.Selection(
+        selection=[
+            ("edification", "Edificación"),
+            ("road", "Carretera / Vía"),
+            ("water", "Agua y saneamiento"),
+            ("bridge", "Puente"),
+            ("school", "Educación"),
+            ("health", "Salud"),
+            ("electric", "Electrificación"),
+            ("irrigation", "Riego / Hidráulica"),
+            ("urban", "Urbanismo"),
+            ("other", "Otro"),
+        ],
+        string="Tipo de obra",
+        tracking=True,
     )
     contract_number = fields.Char(string="Número de contrato", tracking=True)
     contract_amount = fields.Monetary(
         string="Monto contractual",
         currency_field="currency_id",
+        tracking=True,
+    )
+    contract_date = fields.Date(string="Fecha de contrato", tracking=True)
+    contract_term = fields.Char(
+        string="Plazo contractual",
+        help="Ej.: 180 días calendario",
+        tracking=True,
+    )
+    contract_end_date = fields.Date(string="Fecha de término", tracking=True)
+    financial_progress = fields.Float(
+        string="Avance financiero (%)",
+        default=0.0,
         tracking=True,
     )
     location = fields.Char(string="Ubicación", tracking=True)
@@ -140,6 +186,42 @@ class EigrConstructionProject(models.Model):
     closure_progress = fields.Float(
         string="Cierre documental (%)",
         compute="_compute_closure",
+    )
+    technical_file_ids = fields.One2many(
+        "eigr.construction.technical_file", "project_id", string="Expediente técnico"
+    )
+    metrado_ids = fields.One2many(
+        "eigr.construction.metrado", "project_id", string="Metrados"
+    )
+    schedule_ids = fields.One2many(
+        "eigr.construction.schedule", "project_id", string="Cronograma"
+    )
+    advance_ids = fields.One2many(
+        "eigr.construction.advance", "project_id", string="Adelantos"
+    )
+    additional_ids = fields.One2many(
+        "eigr.construction.additional", "project_id", string="Adicionales / Deductivos"
+    )
+    deadline_ids = fields.One2many(
+        "eigr.construction.deadline", "project_id", string="Ampliaciones de plazo"
+    )
+    penalty_ids = fields.One2many(
+        "eigr.construction.penalty", "project_id", string="Penalidades"
+    )
+    incident_ids = fields.One2many(
+        "eigr.construction.incident", "project_id", string="Incidencias"
+    )
+    document_ids = fields.One2many(
+        "eigr.construction.document", "project_id", string="Documentos"
+    )
+    resource_ids = fields.One2many(
+        "eigr.construction.resource", "project_id", string="Personal, Equipos y Materiales"
+    )
+    cost_ids = fields.One2many(
+        "eigr.construction.cost", "project_id", string="Costos"
+    )
+    liquidation_ids = fields.One2many(
+        "eigr.construction.liquidation", "project_id", string="Liquidación"
     )
     active = fields.Boolean(default=True)
     notes = fields.Html(string="Descripción y observaciones")

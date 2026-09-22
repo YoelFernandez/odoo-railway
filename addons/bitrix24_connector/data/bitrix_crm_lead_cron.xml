@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <data noupdate="1">
+
+        <record id="ir_cron_bitrix_export_deals" model="ir.cron">
+            <field name="name">Bitrix24: Exportar negocios a Bitrix24</field>
+            <field name="model_id" ref="model_crm_lead"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_push_deals()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+
+</odoo>
