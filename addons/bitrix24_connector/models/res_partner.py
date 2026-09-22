@@ -37,6 +37,7 @@ class ResPartner(models.Model):
 
     synced_company_ids = fields.Many2many(
         "res.partner",
+        relation="bitrix_partner_company_rel",
         column1="contact_id",
         column2="company_id",
         string="Empresas sincronizadas con Bitrix24",
