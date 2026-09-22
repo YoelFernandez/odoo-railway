@@ -12,9 +12,10 @@
     ],
 
     "data": [
-        "security/ir.model.access.csv",
-        "views/bitrix_config_views.xml",
-    ],
+    "security/ir.model.access.csv",
+    "views/bitrix_config_views.xml",
+    "views/res_partner_views.xml",
+],
 
     "external_dependencies": {
         "python": [
