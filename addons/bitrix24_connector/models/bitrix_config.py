@@ -1,55 +1,27 @@
-import requests
+from odoo import models, fields
 
 
-class BitrixAPI:
+class BitrixConfig(models.Model):
+    _name = "bitrix.config"
+    _description = "Configuración Bitrix24"
 
-    def __init__(self, webhook_url):
-        self.webhook_url = webhook_url.rstrip("/") + "/"
+    name = fields.Char(
+        string="Nombre",
+        required=True,
+        default="Bitrix24",
+    )
 
-    def call(self, method, params=None):
+    webhook_url = fields.Char(
+        string="Webhook URL",
+        required=True,
+    )
 
-        url = self.webhook_url + method
+    active = fields.Boolean(
+        string="Activo",
+        default=True,
+    )
 
-        response = requests.post(
-            url,
-            json=params or {},
-            timeout=30,
-        )
-
-        response.raise_for_status()
-
-        data = response.json()
-
-        if "error" in data:
-            raise Exception(
-                f"Bitrix24: {data.get('error')} - "
-                f"{data.get('error_description')}"
-            )
-
-        return data
-
-    def test_connection(self):
-
-        return self.call(
-            "profile",
-            {}
-        )
-
-    def get_contacts(self):
-
-        return self.call(
-            "crm.contact.list",
-            {
-                "select": [
-                    "ID",
-                    "NAME",
-                    "LAST_NAME",
-                    "SECOND_NAME",
-                    "PHONE",
-                    "EMAIL",
-                ],
-                "order": {
-                    "ID": "ASC"
-                },
-            }
-        )
+    last_sync = fields.Datetime(
+        string="Última sincronización",
+        readonly=True,
+    )
