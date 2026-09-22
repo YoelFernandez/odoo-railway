@@ -2,7 +2,7 @@ FROM odoo:19.0
 
 USER root
 
-COPY addons /mnt/custom-addons
+COPY custom-addons /mnt/custom-addons
 COPY entrypoint.sh /entrypoint-custom.sh
 
 RUN chmod +x /entrypoint-custom.sh
