@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <record
+        id="view_partner_form_bitrix"
+        model="ir.ui.view"
+    >
+
+        <field name="name">
+            res.partner.form.bitrix
+        </field>
+
+        <field name="model">
+            res.partner
+        </field>
+
+        <field
+            name="inherit_id"
+            ref="base.view_partner_form"
+        />
+
+        <field name="arch" type="xml">
+
+            <xpath
+                expr="//sheet/notebook"
+                position="inside"
+            >
+
+                <page
+                    string="Bitrix24"
+                    name="bitrix24"
+                >
+
+                    <group>
+
+                        <field
+                            name="bitrix_contact_id"
+                            readonly="True"
+                        />
+
+                        <field
+                            name="bitrix_last_sync"
+                            readonly="True"
+                        />
+
+                    </group>
+
+                </page>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+
+    <record
+        id="action_import_bitrix_contacts"
+        model="ir.actions.server"
+    >
+
+        <field name="name">
+            Importar contactos Bitrix24
+        </field>
+
+        <field name="model_id"
+               ref="base.model_res_partner"/>
+
+        <field name="state">
+            code
+        </field>
+
+        <field name="code">
+            action = model.import_bitrix_contacts()
+        </field>
+
+    </record>
+
+
+    <menuitem
+        id="menu_import_bitrix_contacts"
+        name="Importar contactos"
+        parent="menu_bitrix_root"
+        action="action_import_bitrix_contacts"
+        sequence="20"
+    />
+
+</odoo>
