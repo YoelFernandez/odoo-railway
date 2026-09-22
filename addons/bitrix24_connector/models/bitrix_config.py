@@ -14,6 +14,7 @@ class BitrixConfig(models.Model):
     webhook_url = fields.Char(
         string="Webhook URL",
         required=True,
+        help="URL del webhook entrante de Bitrix24.",
     )
 
     active = fields.Boolean(
