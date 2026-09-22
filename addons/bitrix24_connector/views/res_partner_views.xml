@@ -12,8 +12,8 @@
                 <page string="Bitrix24" name="bitrix24">
                     <group>
                         <field name="bitrix_contact_id"/>
+                        <field name="bitrix_company_id"/>
                         <field name="bitrix_last_sync"/>
-                        <field name="synced_company_ids"/>
                     </group>
                 </page>
             </xpath>

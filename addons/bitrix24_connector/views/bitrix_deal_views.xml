@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+    <record id="view_bitrix_deal_list" model="ir.ui.view">
+        <field name="name">bitrix.deal.list</field>
+        <field name="model">bitrix.deal</field>
+
+        <field name="arch" type="xml">
+            <list string="Negocios Bitrix24">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="company_id"/>
+                <field name="stage_id"/>
+                <field name="opportunity"/>
+                <field name="date_modify"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bitrix_deal_form" model="ir.ui.view">
+        <field name="name">bitrix.deal.form</field>
+        <field name="model">bitrix.deal</field>
+
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="partner_id"/>
+                        <field name="company_id"/>
+                        <field name="stage_id"/>
+                        <field name="category_id"/>
+                        <field name="opportunity"/>
+                        <field name="bitrix_deal_id" readonly="True"/>
+                        <field name="date_modify"/>
+                        <field name="bitrix_last_sync" readonly="True"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bitrix_deal" model="ir.actions.act_window">
+        <field name="name">Negocios</field>
+        <field name="res_model">bitrix.deal</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_bitrix_deal"
+        name="Negocios"
+        parent="menu_bitrix_root"
+        action="action_bitrix_deal"
+        sequence="30"
+    />
+
+</odoo>
