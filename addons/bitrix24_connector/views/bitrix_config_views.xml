@@ -24,6 +24,10 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <button name="action_sync_now"
+                            type="object"
+                            string="Sincronizar ahora"
+                            class="btn-primary"/>
                     <button name="action_test_connection"
                             type="object"
                             string="Probar conexión"
@@ -31,7 +35,7 @@
                     <button name="action_import_contacts"
                             type="object"
                             string="Importar contactos"
-                            class="btn-primary"/>
+                            class="btn-secondary"/>
                 </header>
 
                 <sheet>
@@ -40,6 +44,7 @@
                         <field name="name"/>
                         <field name="webhook_url" password="True"/>
                         <field name="active"/>
+                        <field name="sync_interval"/>
                         <field name="last_sync" readonly="True"/>
                     </group>
 

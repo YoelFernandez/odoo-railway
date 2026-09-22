@@ -13,6 +13,7 @@
 
     "data": [
     "security/ir.model.access.csv",
+    "data/bitrix_cron.xml",
     "views/bitrix_config_views.xml",
     "views/res_partner_views.xml",
 ],

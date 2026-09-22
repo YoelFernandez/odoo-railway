@@ -1,7 +1,12 @@
+import logging
+from datetime import datetime, timezone
+
 from odoo import models, fields, _
 from odoo.exceptions import UserError
 
 from ..services.bitrix_api import BitrixAPI
+
+_logger = logging.getLogger(__name__)
 
 
 class ResPartner(models.Model):
@@ -45,113 +50,247 @@ class ResPartner(models.Model):
 
         return config
 
+    @staticmethod
+    def _parse_bitrix_date(value):
+
+        if not value:
+            return False
+
+        try:
+
+            parsed = datetime.fromisoformat(
+                str(value).replace("Z", "+00:00")
+            )
+
+        except ValueError:
+
+            return False
+
+        if parsed.tzinfo is not None:
+
+            parsed = parsed.astimezone(
+                timezone.utc
+            ).replace(tzinfo=None)
+
+        return parsed
+
+    @staticmethod
+    def _bitrix_to_odoo_values(contact):
+
+        bitrix_id = str(contact.get("ID") or "")
+
+        name = " ".join(
+            part
+            for part in [
+                contact.get("NAME") or "",
+                contact.get("SECOND_NAME") or "",
+                contact.get("LAST_NAME") or "",
+            ]
+            if part
+        ).strip()
+
+        if not name:
+            name = f"Bitrix Contact {bitrix_id}"
+
+        return {
+            "name": name,
+            "phone": ResPartner._get_multifield_value(
+                contact.get("PHONE")
+            ) or False,
+            "email": ResPartner._get_multifield_value(
+                contact.get("EMAIL")
+            ) or False,
+        }
+
+    @staticmethod
+    def _odoo_to_sync_values(partner):
+
+        return {
+            "name": partner.name or "",
+            "phone": partner.phone or False,
+            "email": partner.email or False,
+        }
+
+    @staticmethod
+    def _odoo_values_to_bitrix(values):
+
+        payload = {
+            "NAME": values.get("name") or "",
+        }
+
+        if values.get("phone"):
+
+            payload["PHONE"] = [
+                {
+                    "VALUE": values["phone"],
+                    "VALUE_TYPE": "WORK",
+                }
+            ]
+
+        if values.get("email"):
+
+            payload["EMAIL"] = [
+                {
+                    "VALUE": values["email"],
+                    "VALUE_TYPE": "WORK",
+                }
+            ]
+
+        return payload
+
+    def _pull_bitrix_contacts(self, contacts_by_id):
+
+        imported = 0
+        updated = 0
+        pulled_ids = set()
+
+        for bitrix_id, contact in contacts_by_id.items():
+
+            values = self._bitrix_to_odoo_values(contact)
+
+            partner = self.search(
+                [("bitrix_contact_id", "=", bitrix_id)],
+                limit=1,
+            )
+
+            if not partner:
+
+                self.create(dict(
+                    values,
+                    bitrix_contact_id=bitrix_id,
+                    bitrix_last_sync=fields.Datetime.now(),
+                ))
+
+                imported += 1
+
+                continue
+
+            if self._odoo_to_sync_values(partner) == values:
+                continue
+
+            bitrix_date = self._parse_bitrix_date(
+                contact.get("DATE_MODIFY")
+            )
+
+            if (
+                bitrix_date
+                and partner.write_date
+                and bitrix_date <= partner.write_date
+            ):
+                continue
+
+            partner.write(dict(
+                values,
+                bitrix_last_sync=fields.Datetime.now(),
+            ))
+
+            pulled_ids.add(partner.id)
+            updated += 1
+
+        return imported, updated, pulled_ids
+
+    def _push_bitrix_contacts(
+        self, api, contacts_by_id, pulled_ids
+    ):
+
+        domain = [("type", "=", "contact")]
+
+        if pulled_ids:
+
+            domain.append(
+                ("id", "not in", list(pulled_ids))
+            )
+
+        exported = 0
+
+        for partner in self.search(domain):
+
+            values = self._odoo_to_sync_values(partner)
+            bitrix_id = partner.bitrix_contact_id
+
+            if bitrix_id and bitrix_id in contacts_by_id:
+
+                if values == self._bitrix_to_odoo_values(
+                    contacts_by_id[bitrix_id]
+                ):
+                    continue
+
+            elif bitrix_id:
+
+                bitrix_id = False
+
+            payload = self._odoo_values_to_bitrix(values)
+
+            if bitrix_id:
+
+                api.update_contact(bitrix_id, payload)
+
+            else:
+
+                new_id = api.create_contact(payload)
+
+                if new_id:
+                    partner.bitrix_contact_id = str(new_id)
+
+            partner.bitrix_last_sync = fields.Datetime.now()
+
+            exported += 1
+
+        return exported
+
+    def sync_with_bitrix(self, config):
+
+        api = BitrixAPI(config.webhook_url)
+
+        contacts = api.get_contacts()
+
+        contacts_by_id = {
+            str(contact.get("ID")): contact
+            for contact in contacts
+            if contact.get("ID")
+        }
+
+        imported, updated, pulled_ids = (
+            self._pull_bitrix_contacts(contacts_by_id)
+        )
+
+        exported = self._push_bitrix_contacts(
+            api, contacts_by_id, pulled_ids
+        )
+
+        config.last_sync = fields.Datetime.now()
+
+        return {
+            "imported": imported,
+            "updated": updated,
+            "exported": exported,
+        }
+
     def import_bitrix_contacts(self):
 
         config = self._get_bitrix_config()
 
-        api = BitrixAPI(
-            config.webhook_url
-        )
+        api = BitrixAPI(config.webhook_url)
 
         try:
-            result = api.get_contacts()
+            contacts = api.get_contacts()
 
         except Exception as error:
             raise UserError(
-                _("Error conectando con Bitrix24: %s")
-                % error
+                _("Error conectando con Bitrix24: %s") % error
             )
 
-        contacts = result.get(
-            "result",
-            []
+        contacts_by_id = {
+            str(contact.get("ID")): contact
+            for contact in contacts
+            if contact.get("ID")
+        }
+
+        imported, updated, _pulled = (
+            self._pull_bitrix_contacts(contacts_by_id)
         )
 
-        imported = 0
-        updated = 0
-
-        for contact in contacts:
-
-            bitrix_id = str(
-                contact.get("ID")
-            )
-
-            if not bitrix_id:
-                continue
-
-            partner = self.search(
-                [
-                    (
-                        "bitrix_contact_id",
-                        "=",
-                        bitrix_id,
-                    )
-                ],
-                limit=1,
-            )
-
-            first_name = (
-                contact.get("NAME")
-                or ""
-            )
-
-            second_name = (
-                contact.get("SECOND_NAME")
-                or ""
-            )
-
-            last_name = (
-                contact.get("LAST_NAME")
-                or ""
-            )
-
-            name = " ".join(
-                part
-                for part in [
-                    first_name,
-                    second_name,
-                    last_name,
-                ]
-                if part
-            )
-
-            if not name:
-                name = (
-                    f"Bitrix Contact "
-                    f"{bitrix_id}"
-                )
-
-            phone = self._get_multifield_value(
-                contact.get("PHONE")
-            )
-
-            email = self._get_multifield_value(
-                contact.get("EMAIL")
-            )
-
-            values = {
-                "name": name,
-                "phone": phone,
-                "email": email,
-                "bitrix_contact_id": bitrix_id,
-                "bitrix_last_sync": fields.Datetime.now(),
-            }
-
-            if partner:
-
-                partner.write(values)
-
-                updated += 1
-
-            else:
-
-                self.create(values)
-
-                imported += 1
-
-        config.write({
-            "last_sync": fields.Datetime.now()
-        })
+        config.last_sync = fields.Datetime.now()
 
         return {
             "type": "ir.actions.client",

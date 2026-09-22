@@ -1,7 +1,11 @@
-from odoo import models, fields, _
+import logging
+
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 from ..services.bitrix_api import BitrixAPI
+
+_logger = logging.getLogger(__name__)
 
 
 class BitrixConfig(models.Model):
@@ -25,10 +29,87 @@ class BitrixConfig(models.Model):
         default=True,
     )
 
+    sync_interval = fields.Integer(
+        string="Intervalo de sincronización (minutos)",
+        default=60,
+        help="Cada cuántos minutos se ejecuta la sincronización "
+             "automática. Usa 0 para desactivarla.",
+    )
+
     last_sync = fields.Datetime(
         string="Última sincronización",
         readonly=True,
     )
+
+    def action_sync_now(self):
+
+        self.ensure_one()
+
+        try:
+
+            result = self.env[
+                "res.partner"
+            ].sync_with_bitrix(self)
+
+        except Exception as error:
+
+            raise UserError(
+                _("Error sincronizando con Bitrix24: %s")
+                % error
+            )
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Bitrix24"),
+                "message": _(
+                    "Sincronización completada. "
+                    "Nuevos: %(imported)s | "
+                    "Actualizados: %(updated)s | "
+                    "Exportados: %(exported)s"
+                ) % result,
+                "type": "success",
+                "sticky": False,
+            },
+        }
+
+    @api.model
+    def _cron_sync(self):
+
+        config = self.search(
+            [("active", "=", True)],
+            limit=1,
+        )
+
+        if not config or not config.webhook_url:
+            return
+
+        if not config.sync_interval:
+            return
+
+        if config.last_sync:
+
+            elapsed = (
+                fields.Datetime.now() - config.last_sync
+            ).total_seconds() / 60
+
+            if elapsed < config.sync_interval:
+                return
+
+        try:
+
+            config.env[
+                "res.partner"
+            ].sync_with_bitrix(config)
+
+        except Exception as error:
+
+            _logger.error(
+                "Bitrix24: fallo en la sincronización "
+                "automática: %s",
+                error,
+            )
 
     def action_test_connection(self):
 
