@@ -19,13 +19,10 @@ class ResPartner(models.Model):
         readonly=True,
     )
 
-    _sql_constraints = [
-        (
-            "bitrix_contact_id_unique",
-            "unique(bitrix_contact_id)",
-            "El ID del contacto de Bitrix24 debe ser único.",
-        )
-    ]
+    _bitrix_contact_id_unique = models.Constraint(
+        "unique(bitrix_contact_id)",
+        "El ID del contacto de Bitrix24 debe ser único.",
+    )
 
     def _get_bitrix_config(self):
 
