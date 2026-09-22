@@ -6,7 +6,7 @@ COPY addons /mnt/extra-addons
 COPY entrypoint.sh /entrypoint-custom.sh
 
 RUN chmod +x /entrypoint-custom.sh
-RUN chown -R odoo:odoo /mnt/extra-addons
+RUN chown -R odoo:odoo /mnt/custom-addons
 
 USER odoo
 
